@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
-const Data = require("./models/data");
+const List = require("./models/list");
 const API_PORT = 3001;
 const app = express();
 const router = express.Router();
@@ -28,17 +28,17 @@ app.use(bodyParser.json());
 app.use(logger("dev"));
 
 // get, GETs all data from database
-router.get("/getData", (req, res) => {
-  Data.find((err, data) => {
+router.get("/getAllLists", (req, res) => {
+  List.find((err, list) => {
     if (err) return res.json({ success: false, error: err });
-    return res.json({ success: true, data: data });
+    return res.json({ success: true, list: list });
   });
 });
 
 // update, changes existing data in database
-router.post("/updateData", (req, res) => {
+router.post("/updateList", (req, res) => {
   const { id, update } = req.body;
-  Data.findOneAndUpdate(id, update, err => {
+  List.findOneAndUpdate(id, update, err => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
   });
@@ -46,9 +46,9 @@ router.post("/updateData", (req, res) => {
 
 
 // deletes existing data in database
-router.delete("/deleteData", (req, res) => {
+router.delete("/deleteList", (req, res) => {
   const { id } = req.body;
-  Data.findOneAndDelete(id, err => {
+  List.findOneAndDelete(id, err => {
     if (err) return res.send(err);
     return res.json({ success: true });
   });
@@ -56,20 +56,20 @@ router.delete("/deleteData", (req, res) => {
 
 
 // create, adds new record to database
-router.post("/putData", (req, res) => {
-  let data = new Data();
+router.post("/addList", (req, res) => {
+  let list = new List();
 
-  const { id, message } = req.body;
+  const { id, title } = req.body;
 
-  if ((!id && id !== 0) || !message) {
+  if ((!id && id !== 0) || !title) {
     return res.json({
       success: false,
       error: "Invalid input"
     });
   }
-  data.message = message;
-  data.id = id;
-  data.save(err => {
+  list.title = title;
+  list.id = id;
+  list.save(err => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
   });

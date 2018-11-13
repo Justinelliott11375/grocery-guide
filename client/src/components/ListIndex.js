@@ -6,125 +6,112 @@ class ListIndex extends Component {
 
 // initialize state 
 state = {
-  data: [],
+  list: [],
   id: 1,
-  message: null,
+  title: null,
   intervalIsSet: false,
-  idToDelete: null,
-  idToUpdate: null,
+  listToDelete: null,
+  listToUpdate: null,
   objectToUpdate: null
 };
-// when component mounts, first thing it does is fetch all existing data in our db
-  // then we incorporate a polling logic so that we can easily see if our db has 
-  // changed and implement those changes into our UI
+
+// when component mounts, check database continuously for changes
   componentDidMount() {
-    this.getDataFromDb();
+    this.getList();
     if (!this.state.intervalIsSet) {
-      let interval = setInterval(this.getDataFromDb, 1000);
+      let interval = setInterval(this.getList, 1000);
       this.setState({ intervalIsSet: interval });
     }
   }
 
-  // never let a process live forever 
-  // always kill a process everytime we are done using it
+  // clean-up before component is removed from DOM
   componentWillUnmount() {
     if (this.state.intervalIsSet) {
       clearInterval(this.state.intervalIsSet);
       this.setState({ intervalIsSet: null });
     }
   }
-
-  // just a note, here, in the front end, we use the id key of our data object 
-  // in order to identify which we want to Update or delete.
-  // for our back end, we use the object id assigned by MongoDB to modify 
-  // data base entries
-
-  // our first get method that uses our backend api to 
-  // fetch data from our data base
-  getDataFromDb = () => {
-    fetch("/api/getData")
+  
+  // fetch data from database and set state with json response
+  getList = () => {
+    fetch("/api/getAllLists")
     
-      .then(data => data.json())
-      .then(res => this.setState({ data: res.data }));
+      .then(list => list.json())
+      .then(res => this.setState({ list: res.list }));
   };
 
-  // our put method that uses our backend api
-  // to create new query into our data base
-  putDataToDB = message => {
-    let currentIds = this.state.data.map(data => data.id);
-    let idToBeAdded = 1;
-    while (currentIds.includes(idToBeAdded)) {
-      ++idToBeAdded;
+  // add list to database with incrementing id number
+  addList = title => {
+    let currentIds = this.state.list.map(list => list.id);
+    let newListId = 1;
+    while (currentIds.includes(newListId)) {
+      ++newListId;
     }
 
-    axios.post("/api/putData", {
-      id: idToBeAdded,
-      message: message
+    axios.post("/api/addList", {
+      id: newListId,
+      title: title
     });
   };
 
 
-  // our delete method that uses our backend api 
-  // to remove existing database information
-  deleteFromDB = idTodelete => {
+  // delete from database with id number
+  deleteList = idTodelete => {
     let objIdToDelete = null;
-    this.state.data.forEach(data => {
-      if (data.id === idTodelete) {
-        objIdToDelete = data._id;
+    this.state.list.forEach(list => {
+      if (list.id === idTodelete) {
+        objIdToDelete = list._id;
       }
     });
 
-    axios.delete("/api/deleteData", {
-      data: {
+    axios.delete("/api/deleteList", {
+      list: {
         id: objIdToDelete
       }
     });
   };
 
 
-  // our update method that uses our backend api
-  // to overwrite existing data base information
-  updateDB = (idToUpdate, updateToApply) => {
+  // update, change database info with user input
+  updateList = (listToUpdate, updateToApply) => {
     let objIdToUpdate = null;
-    this.state.data.forEach(data => {
-      if (data.id === idToUpdate) {
-        objIdToUpdate = data._id;
+    this.state.list.forEach(list => {
+      if (list.id === listToUpdate) {
+        objIdToUpdate = list._id;
       }
     });
 
-    axios.post("/api/updateData", {
+    axios.post("/api/updateList", {
       id: objIdToUpdate,
-      update: { message: updateToApply }
+      update: { title: updateToApply }
     });
   };
 
 
-  // here is our UI
-  // it is easy to understand their functions when you 
-  // see them render into our screen
+  // UI
   render() {
-    const { data } = this.state;
+    const { list } = this.state;
     return (
       <div>
         <ul>
           <h4>Lists</h4>
-          {data.length <= 0
+          {list.length <= 0
             ? "NO DB ENTRIES YET"
-            : data.map(data => (
-                <li style={{ padding: "10px" }} key={data.message}>
+            : list.map(list => (
+                <li style={{ padding: "10px" }} key={list.title}>
                   <span style={{ color: "gray" }}> </span>
-                  {data.message}
+                  {list.title}
                 </li>
               ))}
         </ul>
         <div style={{ padding: "10px" }}>
           <input
             type="text"
-            onChange={e => this.setState({ message: e.target.value })}
+            onChange={e => this.setState({ title: e.target.value })}
             placeholder="add something in the database"
             style={{ width: "200px" }}
           />
-          <button onClick={() => this.putDataToDB(this.state.message)}>
+          <button onClick={() => this.addList(this.state.title)}>
             ADD
           </button>
         </div>
@@ -132,10 +119,10 @@ state = {
           <input
             type="text"
             style={{ width: "200px" }}
-            onChange={e => this.setState({ idToDelete: e.target.value })}
+            onChange={e => this.setState({ listToDelete: e.target.value })}
             placeholder="put id of item to delete here"
           />
-          <button onClick={() => this.deleteFromDB(this.state.idToDelete)}>
+          <button onClick={() => this.deleteList(this.state.listToDelete)}>
             DELETE
           </button>
         </div>
@@ -143,7 +130,7 @@ state = {
           <input
             type="text"
             style={{ width: "200px" }}
-            onChange={e => this.setState({ idToUpdate: e.target.value })}
+            onChange={e => this.setState({ listToUpdate: e.target.value })}
             placeholder="id of item to update here"
           />
           <input
@@ -154,7 +141,7 @@ state = {
           />
           <button
             onClick={() =>
-              this.updateDB(this.state.idToUpdate, this.state.updateToApply)
+              this.updateList(this.state.listToUpdate, this.state.updateToApply)
             }
           >
             UPDATE
