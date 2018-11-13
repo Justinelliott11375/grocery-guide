@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { BrowserRouter, Route, Link } from 'react-router-dom'
+import ListItems from './ListItems';
+
 
 
 class ListIndex extends Component {
@@ -12,7 +15,8 @@ state = {
   intervalIsSet: false,
   listToDelete: null,
   listToUpdate: null,
-  objectToUpdate: null
+  objectToUpdate: null,
+  activeList: {}
 };
 
 // when component mounts, check database continuously for changes
@@ -87,6 +91,12 @@ state = {
     });
   };
 
+  makeActiveList = (list) => {
+    console.log("makeActiveList called");
+    console.log(list.title);
+    this.setState({activeList: list}, () => console.log("activeList: ", this.state.activeList));
+  }
+
 
   // UI
   render() {
@@ -96,13 +106,14 @@ state = {
         <ul>
           <h4>Lists</h4>
           {list.length <= 0
-            ? "NO DB ENTRIES YET"
+            ? "No Lists yet"
             : list.map(list => (
-                <li style={{ padding: "10px" }} key={list.title}>
-                  <span style={{ color: "gray" }}> </span>
+         
+                <button  style={{ padding: "10px" }} key={list.title} onClick= {() => this.makeActiveList(list)}>
                   {list.title}
-                </li>
+                </button>
               ))}
+              
         </ul>
         <div style={{ padding: "10px" }}>
           <input
@@ -146,6 +157,7 @@ state = {
           >
             UPDATE
           </button>
+          <ListItems activeList= {this.state.activeList}/>
         </div>
       </div>
     );

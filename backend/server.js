@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const List = require("./models/list");
+const Item = require("./models/item");
 const API_PORT = 3001;
 const app = express();
 const router = express.Router();
@@ -27,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
 
-// get, GETs all data from database
+// get, GETs all lists from database
 router.get("/getAllLists", (req, res) => {
   List.find((err, list) => {
     if (err) return res.json({ success: false, error: err });
@@ -55,7 +56,7 @@ router.delete("/deleteList", (req, res) => {
 });
 
 
-// create, adds new record to database
+// create, adds new list to database
 router.post("/addList", (req, res) => {
   let list = new List();
 
@@ -74,6 +75,35 @@ router.post("/addList", (req, res) => {
     return res.json({ success: true });
   });
 });
+
+// get, GETs all list items from database
+router.get("/getAllListItems", (req, res) => {
+    Item.find((err, listItems) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, listItems: listItems});
+    });
+  });
+
+// create, adds new item to database
+router.post("/addListItem", (req, res) => {
+    let item = new Item();
+  
+    const { id, title, listId } = req.body;
+  
+    if ((!id && id !== 0) || !title) {
+      return res.json({
+        success: false,
+        error: "Invalid input"
+      });
+    }
+    item.title = title;
+    item.id = id;
+    item.listId = listId;
+    item.save(err => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true });
+    });
+  });
 
 // append /api for http requests
 app.use("/api", router);
