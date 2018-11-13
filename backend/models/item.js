@@ -6,7 +6,11 @@ const itemSchema = new Schema(
   {
     id: Number,
     title: String,
-    listId: Number
+    listId: Number,
+    purchased: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );

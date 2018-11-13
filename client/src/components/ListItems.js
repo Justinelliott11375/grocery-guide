@@ -51,7 +51,24 @@ addListItem = title => {
       title: title,
       listId: this.props.activeList.id
     });
+};
+
+// delete item from database 
+deleteListItem = idTodelete => {
+    let objIdToDelete = null;
+    this.state.listItems.forEach(item => {
+      if (item.id === idTodelete) {
+        objIdToDelete = item._id;
+      }
+    });
+
+    axios.delete("/api/deleteListItem", {
+      listItems: {
+        id: objIdToDelete
+      }
+    });
   };
+  
     render() {
         const { listItems } = this.state;
         return (
@@ -66,6 +83,7 @@ addListItem = title => {
              
                     <li style={{ padding: "10px" }} key={listItems.title}>
                       {listItems.title}
+                      <button onClick={() => this.deleteListItem(this.state.listItemToDelete)}>delete</button>
                     </li>
                   ))}
             </ul>

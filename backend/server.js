@@ -105,6 +105,15 @@ router.post("/addListItem", (req, res) => {
     });
   });
 
+  // deletes existing item in database
+router.delete("/deleteListItem", (req, res) => {
+    const { id } = req.body;
+    Item.findOneAndDelete(id, err => {
+      if (err) return res.send(err);
+      return res.json({ success: true });
+    });
+  });
+
 // append /api for http requests
 app.use("/api", router);
 
