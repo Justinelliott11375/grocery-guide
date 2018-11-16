@@ -40,6 +40,7 @@ componentDidMount() {
 
 // add item to database 
 addListItem = title => {
+    console.log(this.state.listItems);
     let currentIds = this.state.listItems.map(item => item.id);
     let newItemId = 1;
     while (currentIds.includes(newItemId)) {
